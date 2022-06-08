@@ -289,6 +289,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 
 		return tx.QueryRowContext(ctx, "SELECT `created_at` FROM `users` WHERE `id` = ? LIMIT 1", id).Scan(&user.CreatedAt)
 	})
+	uCache.Set(user.ID, *user)
 
 	if err != nil {
 		sendErrorJSON(w, err, 500)
