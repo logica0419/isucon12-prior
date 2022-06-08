@@ -446,8 +446,8 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 func schedulesHandler(w http.ResponseWriter, r *http.Request) {
 	schedules := []*Schedule{}
 	rows, err := db.QueryxContext(r.Context(),
-		"SELECT schedules.*, COUNT(reservations.id) as reserved FROM schedules"+
-			"LEFT OUTER JOIN reservations ON reservations.schedule_id = schedules.id"+
+		"SELECT schedules.*, COUNT(reservations.id) as reserved FROM schedules "+
+			"LEFT OUTER JOIN reservations ON reservations.schedule_id = schedules.id "+
 			"GROUP BY schedules.id ORDER BY schedules.id DESC")
 	if err != nil {
 		sendErrorJSON(w, err, 500)
