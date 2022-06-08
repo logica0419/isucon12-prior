@@ -21,7 +21,7 @@ func init() {
 }
 
 func main() {
-	go http.ListenAndServe(":6060", nil)
+	// go http.ListenAndServe(":6060", nil)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", bind, port),
