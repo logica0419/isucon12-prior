@@ -477,6 +477,11 @@ func schedulesHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	reserved := false
+	if r.URL.Query().Get("reserved") == "1" && requiredStaffLogin(w, r) {
+		reserved = true
+	}
+
 	for rows.Next() {
 		schedule := &Schedule{}
 		if err := rows.StructScan(schedule); err != nil {
@@ -487,7 +492,9 @@ func schedulesHandler(w http.ResponseWriter, r *http.Request) {
 		// 	sendErrorJSON(w, err, 500)
 		// 	return
 		// }
-		schedules = append(schedules, schedule)
+		if reserved || schedule.Reserved < schedule.Capacity {
+			schedules = append(schedules, schedule)
+		}
 	}
 
 	sendJSON(w, schedules, 200)
