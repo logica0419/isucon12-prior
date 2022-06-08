@@ -67,7 +67,7 @@ func (c *Cache[K, V]) Set(key K, value V) {
 	c.Unlock()
 }
 
-var uCache = Cache[string, *User]{m: map[string]*User{}}
+var uCache = Cache[string, User]{m: map[string]User{}}
 
 func getCurrentUser(r *http.Request) *User {
 	uidCookie, err := r.Cookie("user_id")
@@ -77,16 +77,16 @@ func getCurrentUser(r *http.Request) *User {
 
 	user, ok := uCache.Get(uidCookie.Value)
 	if ok {
-		return user
+		return &user
 	}
 
 	row := db.QueryRowxContext(r.Context(), "SELECT * FROM `users` WHERE `id` = ? LIMIT 1", uidCookie.Value)
-	user = &User{}
-	if err := row.StructScan(user); err != nil {
+	user = User{}
+	if err := row.StructScan(&user); err != nil {
 		return nil
 	}
 	uCache.Set(user.ID, user)
-	return user
+	return &user
 }
 
 func requiredLogin(w http.ResponseWriter, r *http.Request) bool {
@@ -150,8 +150,8 @@ func getReservationsCount(r *http.Request, s *Schedule) error {
 func getUser(r *http.Request, id string) *User {
 	user, ok := uCache.Get(id)
 	if !ok {
-		user = &User{}
-		if err := db.QueryRowxContext(r.Context(), "SELECT * FROM `users` WHERE `id` = ? LIMIT 1", id).StructScan(user); err != nil {
+		user = User{}
+		if err := db.QueryRowxContext(r.Context(), "SELECT * FROM `users` WHERE `id` = ? LIMIT 1", id).StructScan(&user); err != nil {
 			return nil
 		}
 		uCache.Set(user.ID, user)
@@ -160,7 +160,7 @@ func getUser(r *http.Request, id string) *User {
 	if getCurrentUser(r) != nil && !getCurrentUser(r).Staff {
 		user.Email = ""
 	}
-	return user
+	return &user
 }
 
 func parseForm(r *http.Request) error {
