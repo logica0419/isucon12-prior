@@ -99,6 +99,10 @@ duration_index = 10
 #regexp = '^(GET|HEAD) /images/'
 #name = 'GET /images/*'
 
+[[bundle]]
+regexp = '^GET /api/schedules/'
+name = 'GET /schedules/*'
+
 ################################################################################
 # Replace
 ################################################################################
