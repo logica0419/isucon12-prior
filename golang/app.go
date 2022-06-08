@@ -287,7 +287,7 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 
 		if _, err := tx.ExecContext(
 			ctx,
-			"INSERT INTO `users` (`id`, `email`, `nickname`, `created_at`) VALUES (?, ?, ?, NOW(6))",
+			"INSERT INTO `users` (`id`, `email`, `nickname`, `created_at`) VALUES (?, ?, ?, ?)",
 			id, email, nickname, now,
 		); err != nil {
 			return err
@@ -356,7 +356,7 @@ func createScheduleHandler(w http.ResponseWriter, r *http.Request) {
 
 		if _, err := tx.ExecContext(
 			ctx,
-			"INSERT INTO `schedules` (`id`, `title`, `capacity`, `created_at`) VALUES (?, ?, ?, NOW(6))",
+			"INSERT INTO `schedules` (`id`, `title`, `capacity`, `created_at`) VALUES (?, ?, ?, ?)",
 			id, title, capacity, now,
 		); err != nil {
 			return err
