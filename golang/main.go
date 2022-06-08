@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	_ "net/http/pprof"
 )
 
 var (
@@ -20,6 +21,8 @@ func init() {
 }
 
 func main() {
+	go http.ListenAndServe(":6060", nil)
+
 	srv := &http.Server{
 		Addr:    fmt.Sprintf("%s:%d", bind, port),
 		Handler: serveMux(),
