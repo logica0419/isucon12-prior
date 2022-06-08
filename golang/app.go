@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gorilla/mux"
@@ -48,13 +49,39 @@ type Reservation struct {
 	CreatedAt  time.Time `db:"created_at" json:"created_at"`
 }
 
+type Cache[K comparable, V any] struct {
+	sync.RWMutex
+	m map[K]V
+}
+
+func (c *Cache[K, V]) Get(key K) (value V, ok bool) {
+	c.RLock()
+	value, ok = c.m[key]
+	c.RUnlock()
+	return
+}
+
+func (c *Cache[K, V]) Set(key K, value V) {
+	c.Lock()
+	c.m[key] = value
+	c.Unlock()
+}
+
+var uCache = Cache[string, *User]{m: map[string]*User{}}
+
 func getCurrentUser(r *http.Request) *User {
 	uidCookie, err := r.Cookie("user_id")
 	if err != nil || uidCookie == nil {
 		return nil
 	}
+
+	user, ok := uCache.Get(uidCookie.Value)
+	if ok {
+		return user
+	}
+
 	row := db.QueryRowxContext(r.Context(), "SELECT * FROM `users` WHERE `id` = ? LIMIT 1", uidCookie.Value)
-	user := &User{}
+	user = &User{}
 	if err := row.StructScan(user); err != nil {
 		return nil
 	}
