@@ -69,6 +69,14 @@ func (c *Cache[K, V]) Set(key K, value V) {
 
 var uCache = Cache[string, User]{m: map[string]User{}}
 
+type reserved struct {
+	isReserved  bool
+	capacity    int
+	reservation int
+}
+
+var rCache = Cache[string, reserved]{m: map[string]reserved{}}
+
 func getCurrentUser(r *http.Request) *User {
 	uidCookie, err := r.Cookie("user_id")
 	if err != nil || uidCookie == nil {
@@ -383,39 +391,50 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 		scheduleID := r.PostFormValue("schedule_id")
 		userID := getCurrentUser(r).ID
 
-		found := 0
-		tx.QueryRowContext(ctx, "SELECT 1 FROM `schedules` WHERE `id` = ? LIMIT 1 FOR UPDATE", scheduleID).Scan(&found)
-		if found != 1 {
+		capacity := 0
+		tx.QueryRowContext(ctx, "SELECT capacity FROM `schedules` WHERE `id` = ? LIMIT 1 FOR UPDATE", scheduleID).Scan(&capacity)
+		if capacity <= 0 {
 			return sendErrorJSON(w, fmt.Errorf("schedule not found"), 403)
 		}
 
-		found = 0
-		tx.QueryRowContext(ctx, "SELECT 1 FROM `users` WHERE `id` = ? LIMIT 1", userID).Scan(&found)
-		if found != 1 {
+		if _, ok := uCache.Get(userID); !ok {
 			return sendErrorJSON(w, fmt.Errorf("user not found"), 403)
 		}
 
-		found = 0
+		found := 0
 		tx.QueryRowContext(ctx, "SELECT 1 FROM `reservations` WHERE `schedule_id` = ? AND `user_id` = ? LIMIT 1", scheduleID, userID).Scan(&found)
 		if found == 1 {
 			return sendErrorJSON(w, fmt.Errorf("already taken"), 403)
 		}
 
-		capacity := 0
-		if err := tx.QueryRowContext(ctx, "SELECT `capacity` FROM `schedules` WHERE `id` = ? LIMIT 1", scheduleID).Scan(&capacity); err != nil {
-			return sendErrorJSON(w, err, 500)
-		}
+		// capacity := 0
+		// if err := tx.QueryRowContext(ctx, "SELECT `capacity` FROM `schedules` WHERE `id` = ? LIMIT 1", scheduleID).Scan(&capacity); err != nil {
+		// 	return sendErrorJSON(w, err, 500)
+		// }
 
-		rows, err := tx.QueryContext(ctx, "SELECT * FROM `reservations` WHERE `schedule_id` = ?", scheduleID)
-		if err != nil && err != sql.ErrNoRows {
-			return sendErrorJSON(w, err, 500)
-		}
-		reserved := 0
-		for rows.Next() {
-			reserved++
-		}
+		// rows, err := tx.QueryContext(ctx, "SELECT * FROM `reservations` WHERE `schedule_id` = ?", scheduleID)
+		// if err != nil && err != sql.ErrNoRows {
+		// 	return sendErrorJSON(w, err, 500)
+		// }
+		// reserved := 0
+		// for rows.Next() {
+		// 	reserved++
+		// }
 
-		if reserved >= capacity {
+		// if reserved >= capacity {
+		// 	return sendErrorJSON(w, fmt.Errorf("capacity is already full"), 403)
+		// }
+
+		res, ok := rCache.Get(scheduleID)
+		if !ok {
+			res = reserved{
+				isReserved:  false,
+				capacity:    capacity,
+				reservation: 0,
+			}
+			rCache.Set(scheduleID, res)
+		}
+		if res.isReserved {
 			return sendErrorJSON(w, fmt.Errorf("capacity is already full"), 403)
 		}
 
@@ -435,6 +454,10 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 		reservation.ScheduleID = scheduleID
 		reservation.UserID = userID
 		reservation.CreatedAt = createdAt
+
+		res.reservation++
+		res.isReserved = res.capacity < res.reservation
+		rCache.Set(scheduleID, res)
 
 		return sendJSON(w, reservation, 200)
 	})
