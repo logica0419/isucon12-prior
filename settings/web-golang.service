@@ -8,6 +8,7 @@ ExecStart=/home/isucon/.x ./bin/webapp
 WorkingDirectory=/home/isucon/webapp/golang
 EnvironmentFile=/home/isucon/env
 TimeoutStopSec=1
+LimitNOFILE=1006500
 
 [Install]
 WantedBy=multi-user.target
