@@ -58,16 +58,6 @@ server {
     access_log                   off;
   }
 
-  location ~ .*\.(htm|html|css|js|eot|svg|ttf|woff|woff2|gif|jpg|png|ico)$ {
-    expires                       24h;
-    add_header                    Cache-Control public;
-
-    gzip                          on;
-    gzip_static                   on;
-    gzip_types                    *;
-    gzip_disable                  "msie6";
-  }
-
   #                              application
   location / {
     expires                      24h;

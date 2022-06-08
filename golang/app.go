@@ -504,6 +504,7 @@ func htmlHandler(w http.ResponseWriter, r *http.Request) {
 	}
 	defer file.Close()
 
+	w.Header().Add("Cache-Control", fmt.Sprintf("max-age=24h, public"))
 	w.Header().Set("Content-Type", "text/html; charset=utf-8")
 	w.WriteHeader(200)
 	io.Copy(w, file)
