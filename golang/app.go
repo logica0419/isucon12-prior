@@ -250,6 +250,9 @@ func initializeHandler(w http.ResponseWriter, r *http.Request) {
 			return err
 		}
 
+		uCache = Cache[string, User]{m: map[string]User{}}
+		rCache = Cache[string, reserved]{m: map[string]reserved{}}
+
 		id := generateID(tx, "users")
 		if _, err := tx.ExecContext(
 			ctx,
