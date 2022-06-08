@@ -101,7 +101,7 @@ duration_index = 10
 
 [[bundle]]
 regexp = '^GET /api/schedules/'
-name = 'GET /schedules/*'
+name = 'GET /api/schedules/*'
 
 ################################################################################
 # Replace
