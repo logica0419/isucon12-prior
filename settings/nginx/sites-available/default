@@ -71,11 +71,11 @@ server {
   }
 
   location ^~ /api {
-    proxy_pass                  @webapp;
+    try_files                  @webapp;
   }
 
   location ^~ /initialize {
-    proxy_pass                  @webapp;
+    try_files                  @webapp;
   }
 
   location @webapp {
