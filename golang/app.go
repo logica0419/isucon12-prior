@@ -85,6 +85,7 @@ func getCurrentUser(r *http.Request) *User {
 	if err := row.StructScan(user); err != nil {
 		return nil
 	}
+	uCache.Set(user.ID, user)
 	return user
 }
 
@@ -147,10 +148,15 @@ func getReservationsCount(r *http.Request, s *Schedule) error {
 }
 
 func getUser(r *http.Request, id string) *User {
-	user := &User{}
-	if err := db.QueryRowxContext(r.Context(), "SELECT * FROM `users` WHERE `id` = ? LIMIT 1", id).StructScan(user); err != nil {
-		return nil
+	user, ok := uCache.Get(id)
+	if !ok {
+		user = &User{}
+		if err := db.QueryRowxContext(r.Context(), "SELECT * FROM `users` WHERE `id` = ? LIMIT 1", id).StructScan(user); err != nil {
+			return nil
+		}
+		uCache.Set(user.ID, user)
 	}
+
 	if getCurrentUser(r) != nil && !getCurrentUser(r).Staff {
 		user.Email = ""
 	}
