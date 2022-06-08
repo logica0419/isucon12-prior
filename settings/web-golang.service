@@ -1,5 +1,5 @@
 [Unit]
-Description=web-ruby
+Description=web-golang
 After=network.target mysql.service
 
 [Service]
