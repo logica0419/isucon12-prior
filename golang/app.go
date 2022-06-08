@@ -457,10 +457,10 @@ func schedulesHandler(w http.ResponseWriter, r *http.Request) {
 			sendErrorJSON(w, err, 500)
 			return
 		}
-		if err := getReservationsCount(r, schedule); err != nil {
-			sendErrorJSON(w, err, 500)
-			return
-		}
+		// if err := getReservationsCount(r, schedule); err != nil {
+		// 	sendErrorJSON(w, err, 500)
+		// 	return
+		// }
 		schedules = append(schedules, schedule)
 	}
 
