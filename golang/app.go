@@ -106,7 +106,8 @@ func requiredLogin(w http.ResponseWriter, r *http.Request) bool {
 }
 
 func requiredStaffLogin(w http.ResponseWriter, r *http.Request) bool {
-	if getCurrentUser(r) != nil && getCurrentUser(r).Staff {
+	currentUser := getCurrentUser(r)
+	if currentUser != nil && currentUser.Staff {
 		return true
 	}
 	sendErrorJSON(w, fmt.Errorf("login required"), 401)
@@ -165,7 +166,8 @@ func getUser(r *http.Request, id string) *User {
 		uCache.Set(user.ID, user)
 	}
 
-	if getCurrentUser(r) != nil && !getCurrentUser(r).Staff {
+	currentUser := getCurrentUser(r)
+	if currentUser != nil && !currentUser.Staff {
 		user.Email = ""
 	}
 	return &user
