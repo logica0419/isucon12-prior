@@ -283,19 +283,21 @@ func signupHandler(w http.ResponseWriter, r *http.Request) {
 		email := r.FormValue("email")
 		nickname := r.FormValue("nickname")
 		id := generateID(tx, "users")
+		now := time.Now()
 
 		if _, err := tx.ExecContext(
 			ctx,
 			"INSERT INTO `users` (`id`, `email`, `nickname`, `created_at`) VALUES (?, ?, ?, NOW(6))",
-			id, email, nickname,
+			id, email, nickname, now,
 		); err != nil {
 			return err
 		}
 		user.ID = id
 		user.Email = email
 		user.Nickname = nickname
+		user.CreatedAt = now
 
-		return tx.QueryRowContext(ctx, "SELECT `created_at` FROM `users` WHERE `id` = ? LIMIT 1", id).Scan(&user.CreatedAt)
+		return nil
 	})
 	uCache.Set(user.ID, *user)
 
@@ -350,20 +352,19 @@ func createScheduleHandler(w http.ResponseWriter, r *http.Request) {
 		id := generateID(tx, "schedules")
 		title := r.PostFormValue("title")
 		capacity, _ := strconv.Atoi(r.PostFormValue("capacity"))
+		now := time.Now()
 
 		if _, err := tx.ExecContext(
 			ctx,
 			"INSERT INTO `schedules` (`id`, `title`, `capacity`, `created_at`) VALUES (?, ?, ?, NOW(6))",
-			id, title, capacity,
+			id, title, capacity, now,
 		); err != nil {
-			return err
-		}
-		if err := tx.QueryRowContext(ctx, "SELECT `created_at` FROM `schedules` WHERE `id` = ?", id).Scan(&schedule.CreatedAt); err != nil {
 			return err
 		}
 		schedule.ID = id
 		schedule.Title = title
 		schedule.Capacity = capacity
+		schedule.CreatedAt = now
 
 		return nil
 	})
@@ -438,22 +439,19 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 			return sendErrorJSON(w, fmt.Errorf("capacity is already full"), 403)
 		}
 
+		now := time.Now()
 		if _, err := tx.ExecContext(
 			ctx,
-			"INSERT INTO `reservations` (`id`, `schedule_id`, `user_id`, `created_at`) VALUES (?, ?, ?, NOW(6))",
-			id, scheduleID, userID,
+			"INSERT INTO `reservations` (`id`, `schedule_id`, `user_id`, `created_at`) VALUES (?, ?, ?, ?)",
+			id, scheduleID, userID, now,
 		); err != nil {
 			return err
 		}
 
-		var createdAt time.Time
-		if err := tx.QueryRowContext(ctx, "SELECT `created_at` FROM `reservations` WHERE `id` = ?", id).Scan(&createdAt); err != nil {
-			return err
-		}
 		reservation.ID = id
 		reservation.ScheduleID = scheduleID
 		reservation.UserID = userID
-		reservation.CreatedAt = createdAt
+		reservation.CreatedAt = now
 
 		res.reservation++
 		res.isReserved = res.capacity < res.reservation
