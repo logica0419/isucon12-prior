@@ -15,12 +15,11 @@
 #
 # * Basic Settings
 #
-user		= mysql
+user = mysql
 # pid-file	= /var/run/mysqld/mysqld.pid
 # socket	= /var/run/mysqld/mysqld.sock
 # port		= 3306
 # datadir	= /var/lib/mysql
-
 
 # If MySQL is running as a replication slave, this should be
 # changed. Ref https://dev.mysql.com/doc/refman/8.0/en/server-system-variables.html#sysvar_tmpdir
@@ -28,11 +27,11 @@ user		= mysql
 #
 # Instead of skip-networking the default is now to listen only on
 # localhost which is more compatible and is not less secure.
-bind-address		= 127.0.0.1
+bind-address = 127.0.0.1
 #
 # * Fine Tuning
 #
-key_buffer_size		= 16M
+key_buffer_size = 16M
 # max_allowed_packet	= 64M
 # thread_stack		= 256K
 
@@ -40,7 +39,7 @@ key_buffer_size		= 16M
 
 # This replaces the startup script and checks MyISAM tables if needed
 # the first time they are touched
-myisam-recover-options  = BACKUP
+myisam-recover-options = BACKUP
 
 max_connections = 1000
 
@@ -72,12 +71,11 @@ log_error = /var/log/mysql/error.log
 # server-id		= 1
 # log_bin			= /var/log/mysql/mysql-bin.log
 # binlog_expire_logs_seconds	= 2592000
-max_binlog_size   = 100M
+max_binlog_size = 100M
 # binlog_do_db		= include_database_name
 # binlog_ignore_db	= include_database_name
 
 sql-mode = "STRICT_TRANS_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_ENGINE_SUBSTITUTION"
-
 
 innodb_buffer_pool_size = 2500MB
 innodb_log_file_size = 600MB
