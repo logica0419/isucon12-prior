@@ -460,7 +460,7 @@ func createReservationHandler(w http.ResponseWriter, r *http.Request) {
 		reservation.CreatedAt = now
 
 		res.reservation++
-		res.isReserved = res.capacity < res.reservation
+		res.isReserved = res.capacity <= res.reservation
 		rCache.Set(scheduleID, res)
 
 		return sendJSON(w, reservation, 200)
